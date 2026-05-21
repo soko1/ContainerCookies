@@ -26,27 +26,20 @@ A Firefox extension for viewing and managing cookies per container.
 
 Coming soon.
 
-## Permissions
 
-| Permission | Reason |
-|---|---|
-| `cookies` | Read and delete cookies |
-| `contextualIdentities` | List Firefox containers |
-| `<all_urls>` | Required to remove cookies across all domains |
+## Requirements
 
-## Development
+ContainerCookies requires [Firefox Multi-Account Containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/) to display container names and colors. Without it, only the "No container" option will be available in the dropdown.
 
-```
-containercookies/
-├── manifest.json
-├── popup.html
-├── popup.js
-├── icon-48.png
-├── icon-96.png
-└── icon-128.png
-```
+## Usage
 
-No build step required — plain HTML/JS WebExtension.
+1. Open a few websites in different containers
+2. Click the ContainerCookies icon in the toolbar
+3. Select a container from the dropdown to see its cookies
+4. Expand any domain to browse individual cookies
+5. Click ✕ next to a cookie to delete it, or use "Clear all" to wipe the entire container
+
+No account or external service required — everything runs locally in your browser.
 
 ## License
 
@@ -63,17 +56,3 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 https://www.gnu.org/licenses/gpl-3.0.html
-
-## Requirements
-
-ContainerCookies requires [Firefox Multi-Account Containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/) to display container names and colors. Without it, only the "No container" option will be available in the dropdown.
-
-## Usage
-
-1. Open a few websites in different containers
-2. Click the ContainerCookies icon in the toolbar
-3. Select a container from the dropdown to see its cookies
-4. Expand any domain to browse individual cookies
-5. Click ✕ next to a cookie to delete it, or use "Clear all" to wipe the entire container
-
-No account or external service required — everything runs locally in your browser.
