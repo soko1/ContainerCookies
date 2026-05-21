@@ -11,31 +11,53 @@ A Firefox extension for viewing and managing cookies per container.
 - Clear all cookies in the selected container at once
 - Search by domain or cookie name
 
-## Installation (temporary, for development)
+## Installation
 
-1. Open Firefox and navigate to `about:debugging`
+### Temporary (development)
+
+1. Open Firefox and go to `about:debugging`
 2. Click **This Firefox**
 3. Click **Load Temporary Add-on**
 4. Select `manifest.json` from this folder
 
-## Files
+### From addons.mozilla.org
+
+Coming soon.
+
+## Permissions
+
+| Permission | Reason |
+|---|---|
+| `cookies` | Read and delete cookies |
+| `contextualIdentities` | List Firefox containers |
+| `<all_urls>` | Required to remove cookies across all domains |
+
+## Development
 
 ```
 containercookies/
 ├── manifest.json
 ├── popup.html
 ├── popup.js
-└── icons/
-    ├── icon-48.png
-    └── icon-96.png
+├── icon-48.png
+├── icon-96.png
+└── icon-128.png
 ```
 
-## Permissions
-
-- `cookies` — read and delete cookies
-- `contextualIdentities` — list Firefox containers
-- `<all_urls>` — required to remove cookies across all domains
+No build step required — plain HTML/JS WebExtension.
 
 ## License
 
-MIT
+Copyright (C) 2026 soko1 <me@cryptopunks.org>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+https://www.gnu.org/licenses/gpl-3.0.html

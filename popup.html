@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 480px;
+      max-height: 580px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      background: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .header {
+      padding: 12px 14px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      flex-shrink: 0;
+    }
+    .header h1 { font-size: 13px; font-weight: 600; color: #e6edf3; }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    select {
+      flex: 1;
+      padding: 6px 10px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: #58a6ff; }
+
+    .btn {
+      padding: 6px 12px;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .btn-ghost { background: #21262d; color: #8b949e; }
+    .btn-ghost:hover { background: #30363d; color: #c9d1d9; }
+    .btn-danger { background: #da3633; color: white; border-color: #da3633; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-danger:disabled { background: #333; border-color: #333; color: #666; cursor: default; }
+
+    /* SEARCH */
+    .search-bar {
+      padding: 8px 12px;
+      background: #0d1117;
+      border-bottom: 1px solid #21262d;
+      flex-shrink: 0;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 5px 10px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 12px;
+    }
+    .search-bar input:focus { outline: none; border-color: #58a6ff; }
+    .search-bar input::placeholder { color: #484f58; }
+
+    /* STATS */
+    .stats {
+      padding: 6px 12px;
+      font-size: 11px;
+      color: #484f58;
+      background: #0d1117;
+      border-bottom: 1px solid #21262d;
+      flex-shrink: 0;
+    }
+    .stats span { color: #8b949e; }
+
+    /* COOKIE LIST */
+    .cookie-list {
+      flex: 1;
+      overflow-y: auto;
+      background: #0d1117;
+    }
+
+    .domain-group { border-bottom: 1px solid #21262d; }
+
+    .domain-header {
+      display: flex;
+      align-items: center;
+      padding: 7px 12px;
+      background: #161b22;
+      cursor: pointer;
+      user-select: none;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+    }
+    .domain-header:hover { background: #1c2128; }
+    .domain-name {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 500;
+      color: #58a6ff;
+    }
+    .domain-count {
+      font-size: 11px;
+      color: #484f58;
+      background: #21262d;
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+    .domain-del {
+      font-size: 11px;
+      color: #da3633;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .domain-header:hover .domain-del { opacity: 1; }
+    .domain-del:hover { background: #da363320; }
+
+    .chevron { font-size: 10px; color: #484f58; transition: transform .15s; }
+    .chevron.open { transform: rotate(90deg); }
+
+    .cookie-items { display: none; }
+    .cookie-items.open { display: block; }
+
+    .cookie-item {
+      display: flex;
+      align-items: center;
+      padding: 5px 12px 5px 28px;
+      gap: 8px;
+      border-top: 1px solid #161b22;
+    }
+    .cookie-item:hover { background: #161b22; }
+
+    .cookie-name {
+      flex: 0 0 160px;
+      font-family: monospace;
+      font-size: 11px;
+      color: #e6edf3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cookie-val {
+      flex: 1;
+      font-family: monospace;
+      font-size: 11px;
+      color: #484f58;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cookie-del {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: #484f58;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .cookie-item:hover .cookie-del { opacity: 1; }
+    .cookie-del:hover { color: #da3633; background: #da363320; }
+
+    /* EMPTY */
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #484f58;
+      font-size: 12px;
+    }
+
+    /* FOOTER */
+    .footer {
+      padding: 8px 12px;
+      background: #161b22;
+      border-top: 1px solid #30363d;
+      font-size: 11px;
+      color: #484f58;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer .status { color: #3fb950; }
+    .footer .status.err { color: #da3633; }
+
+    /* scrollbar */
+    .cookie-list::-webkit-scrollbar { width: 6px; }
+    .cookie-list::-webkit-scrollbar-track { background: #0d1117; }
+    .cookie-list::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🍪 ContainerCookies</h1>
+  </div>
+
+  <div class="toolbar">
+    <select id="containerSelect">
+      <option value="">Loading…</option>
+    </select>
+    <button class="btn btn-ghost" id="refreshBtn">↻</button>
+    <button class="btn btn-danger" id="clearAllBtn" disabled>Clear all</button>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search by domain or cookie name…">
+  </div>
+
+  <div class="stats" id="stats">Loading…</div>
+
+  <div class="cookie-list" id="cookieList">
+    <div class="empty">Select a container</div>
+  </div>
+
+  <div class="footer">
+    <span id="footerStatus"></span>
+    <span id="footerCount"></span>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
