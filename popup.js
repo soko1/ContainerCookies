@@ -10,6 +10,21 @@ function containerIcon(color) {
   return m[color] || '⚪';
 }
 
+function el(tag, props = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'title') e.title = v;
+    else if (k === 'text') e.textContent = v;
+    else e.setAttribute(k, v);
+  }
+  for (const child of children) {
+    if (typeof child === 'string') e.appendChild(document.createTextNode(child));
+    else if (child) e.appendChild(child);
+  }
+  return e;
+}
+
 async function init() {
   await loadContainers();
   $('containerSelect').addEventListener('change', onContainerChange);
@@ -54,7 +69,8 @@ async function onContainerChange() {
 
 async function loadCookies(storeId) {
   $('clearAllBtn').disabled = true;
-  $('cookieList').innerHTML = '<div class="empty">Loading…</div>';
+  $('cookieList').innerHTML = '';
+  $('cookieList').appendChild(el('div', {class: 'empty', text: 'Loading…'}));
   setStatus('');
   try {
     allCookies = await browser.cookies.getAll({ storeId });
@@ -79,8 +95,10 @@ function render() {
     ? `${allCookies.length} cookies`
     : `${filtered.length} of ${allCookies.length} cookies`;
 
+  list.innerHTML = '';
+
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="empty">No cookies found</div>';
+    list.appendChild(el('div', {class: 'empty', text: 'No cookies found'}));
     $('footerCount').textContent = '';
     return;
   }
@@ -92,38 +110,32 @@ function render() {
   }
 
   const domains = Object.keys(byDomain).sort();
-  list.innerHTML = '';
 
   for (const domain of domains) {
     const cookies = byDomain[domain];
     const isOpen = openDomains.has(domain);
 
-    const group = document.createElement('div');
-    group.className = 'domain-group';
+    const group = el('div', {class: 'domain-group'});
 
-    const header = document.createElement('div');
-    header.className = 'domain-header';
-    header.innerHTML = `
-      <span class="chevron ${isOpen ? 'open' : ''}">▶</span>
-      <span class="domain-name">${domain}</span>
-      <span class="domain-count">${cookies.length}</span>
-      <button class="domain-del" title="Delete all cookies for this domain">✕ all</button>
-    `;
+    // header
+    const chevron = el('span', {class: 'chevron' + (isOpen ? ' open' : ''), text: '▶'});
+    const domainName = el('span', {class: 'domain-name', text: domain});
+    const domainCount = el('span', {class: 'domain-count', text: String(cookies.length)});
+    const domainDel = el('button', {class: 'domain-del', title: 'Delete all cookies for this domain', text: '✕ all'});
+    const header = el('div', {class: 'domain-header'}, chevron, domainName, domainCount, domainDel);
 
-    const items = document.createElement('div');
-    items.className = `cookie-items ${isOpen ? 'open' : ''}`;
+    // items
+    const items = el('div', {class: 'cookie-items' + (isOpen ? ' open' : '')});
 
     for (const cookie of cookies) {
-      const item = document.createElement('div');
-      item.className = 'cookie-item';
       const preview = cookie.value.length > 38
         ? cookie.value.slice(0, 38) + '…' : (cookie.value || '(empty)');
-      item.innerHTML = `
-        <span class="cookie-name" title="${cookie.name}">${cookie.name}</span>
-        <span class="cookie-val" title="${cookie.value}">${preview}</span>
-        <button class="cookie-del" title="Delete">✕</button>
-      `;
-      item.querySelector('.cookie-del').addEventListener('click', async e => {
+      const nameSpan = el('span', {class: 'cookie-name', title: cookie.name, text: cookie.name});
+      const valSpan  = el('span', {class: 'cookie-val',  title: cookie.value, text: preview});
+      const delBtn   = el('button', {class: 'cookie-del', title: 'Delete', text: '✕'});
+      const item     = el('div', {class: 'cookie-item'}, nameSpan, valSpan, delBtn);
+
+      delBtn.addEventListener('click', async e => {
         e.stopPropagation();
         await deleteCookie(cookie);
       });
@@ -131,8 +143,7 @@ function render() {
     }
 
     header.addEventListener('click', e => {
-      if (e.target.classList.contains('domain-del')) return;
-      const chevron = header.querySelector('.chevron');
+      if (e.target === domainDel) return;
       if (openDomains.has(domain)) {
         openDomains.delete(domain);
         items.classList.remove('open');
@@ -144,7 +155,7 @@ function render() {
       }
     });
 
-    header.querySelector('.domain-del').addEventListener('click', async e => {
+    domainDel.addEventListener('click', async e => {
       e.stopPropagation();
       for (const c of cookies) await deleteCookie(c, false);
       setStatus(`✓ Deleted all cookies for ${domain}`);

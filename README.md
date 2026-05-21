@@ -20,6 +20,8 @@ A Firefox extension for viewing and managing cookies per container.
 3. Click **Load Temporary Add-on**
 4. Select `manifest.json` from this folder
 
+> **Note for Flatpak Firefox users:** unzip the extension into your home directory (`~/`) first — Flatpak sandboxing prevents loading extensions from `/run/user/...` paths.
+
 ### From addons.mozilla.org
 
 Coming soon.
@@ -48,7 +50,7 @@ No build step required — plain HTML/JS WebExtension.
 
 ## License
 
-Copyright (C) 2026 soko1 <me@cryptopunks.org>
+Copyright (C) 2025 soko1 <me@cryptopunks.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -61,3 +63,17 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 https://www.gnu.org/licenses/gpl-3.0.html
+
+## Requirements
+
+ContainerCookies requires [Firefox Multi-Account Containers](https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/) to display container names and colors. Without it, only the "No container" option will be available in the dropdown.
+
+## Usage
+
+1. Open a few websites in different containers
+2. Click the ContainerCookies icon in the toolbar
+3. Select a container from the dropdown to see its cookies
+4. Expand any domain to browse individual cookies
+5. Click ✕ next to a cookie to delete it, or use "Clear all" to wipe the entire container
+
+No account or external service required — everything runs locally in your browser.

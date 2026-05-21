@@ -5,6 +5,16 @@
   "description": "View and delete cookies per Firefox container. Browse cookies grouped by domain, delete individual cookies or clear entire containers. GitHub: https://github.com/soko1/ContainerCookies",
   "author": "soko1",
   "homepage_url": "https://github.com/soko1/ContainerCookies",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "containercookies@soko1",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "optional": []
+      }
+    }
+  },
   "permissions": [
     "cookies",
     "browsingData",
