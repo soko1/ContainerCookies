@@ -41,6 +41,10 @@ ContainerCookies requires [Firefox Multi-Account Containers](https://addons.mozi
 
 No account or external service required — everything runs locally in your browser.
 
+## Screenshot
+
+![ContainerCookie](/screenshot.png)
+
 ## License
 
 Copyright (C) 2025 soko1 <me@cryptopunks.org>
