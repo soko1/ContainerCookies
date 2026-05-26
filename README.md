@@ -1,8 +1,6 @@
-## Screenshot
+# ContainerCookies
 
 ![ContainerCookie](/screenshot.png)
-
-# ContainerCookies
 
 A Firefox extension for viewing and managing cookies per container.
 
