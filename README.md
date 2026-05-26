@@ -13,6 +13,11 @@ A Firefox extension for viewing and managing cookies per container.
 
 ## Installation
 
+
+### From addons.mozilla.org
+
+https://addons.mozilla.org/en-US/firefox/addon/containercookies/
+
 ### Temporary (development)
 
 1. Open Firefox and go to `about:debugging`
@@ -21,11 +26,6 @@ A Firefox extension for viewing and managing cookies per container.
 4. Select `manifest.json` from this folder
 
 > **Note for Flatpak Firefox users:** unzip the extension into your home directory (`~/`) first — Flatpak sandboxing prevents loading extensions from `/run/user/...` paths.
-
-### From addons.mozilla.org
-
-https://addons.mozilla.org/en-US/firefox/addon/containercookies/
-
 
 ## Requirements
 
