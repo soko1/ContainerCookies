@@ -47,7 +47,7 @@ No account or external service required — everything runs locally in your brow
 
 ## License
 
-Copyright (C) 2025 soko1 <me@cryptopunks.org>
+Copyright (C) 2026 soko1 <me@cryptopunks.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
