@@ -24,7 +24,7 @@ A Firefox extension for viewing and managing cookies per container.
 
 ### From addons.mozilla.org
 
-Coming soon.
+https://addons.mozilla.org/en-US/firefox/addon/containercookies/
 
 
 ## Requirements
