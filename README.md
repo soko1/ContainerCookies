@@ -1,3 +1,7 @@
+## Screenshot
+
+![ContainerCookie](/screenshot.png)
+
 # ContainerCookies
 
 A Firefox extension for viewing and managing cookies per container.
@@ -41,9 +45,6 @@ ContainerCookies requires [Firefox Multi-Account Containers](https://addons.mozi
 
 No account or external service required — everything runs locally in your browser.
 
-## Screenshot
-
-![ContainerCookie](/screenshot.png)
 
 ## License
 
