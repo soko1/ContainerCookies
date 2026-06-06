@@ -224,21 +224,14 @@ function render() {
     domainDel.addEventListener('click', e => {
       e.stopPropagation();
       confirmClick(domainDel, async () => {
-        // Parallelize: sequential `await browser.cookies.remove` made the
-        // popup unresponsive for several seconds on Firefox 140 (regressed
-        // IPC perf). All deletes + one re-fetch is dramatically snappier.
-        const args = cookies.map(c => ({
-          url: `${c.secure ? 'https' : 'http'}://${c.domain.replace(/^\./, '')}${c.path}`,
-          name: c.name,
-          storeId: c.storeId,
-        }));
-        const results = await Promise.allSettled(
-          args.map(a => browser.cookies.remove(a))
-        );
-        const failed = results.filter(r => r.status === 'rejected').length;
+        // Batch + yield: in slow IPC environments (KVM guest, Firefox 140
+        // IPC regression) a tight parallel delete loop still freezes the
+        // popup. Processing in small batches with an event-loop yield
+        // between keeps the popup repainting and clickable during the run.
+        const { total, failed } = await deleteCookiesBatched(cookies);
         setStatus(
           failed
-            ? `Deleted ${cookies.length - failed}/${cookies.length} cookies for ${domain}`
+            ? `Deleted ${total - failed}/${total} cookies for ${domain}`
             : `✓ Deleted all cookies for ${domain}`,
           failed > 0
         );
@@ -268,6 +261,30 @@ function render() {
   $('footerCount').textContent = `${domains.length} domain${domains.length !== 1 ? 's' : ''}`;
 }
 
+// Delete many cookies in small parallel batches, yielding to the event
+// loop between batches. In a tight delete loop the popup would otherwise
+// appear frozen on slow IPC stacks (e.g. Firefox 140 running in a KVM
+// guest, where each cookies.remove roundtrip has measurable overhead).
+// Returns { total, failed }.
+async function deleteCookiesBatched(cookies, batchSize = 8) {
+  const args = cookies.map(c => ({
+    url: `${c.secure ? 'https' : 'http'}://${c.domain.replace(/^\./, '')}${c.path}`,
+    name: c.name,
+    storeId: c.storeId,
+  }));
+  let failed = 0;
+  for (let i = 0; i < args.length; i += batchSize) {
+    const batch = args.slice(i, i + batchSize);
+    const results = await Promise.allSettled(
+      batch.map(a => browser.cookies.remove(a))
+    );
+    failed += results.filter(r => r.status === 'rejected').length;
+    // Yield to the event loop so the popup can repaint and process clicks.
+    await new Promise(r => setTimeout(r, 0));
+  }
+  return { total: cookies.length, failed };
+}
+
 async function deleteCookie(cookie, reload = true) {
   const protocol = cookie.secure ? 'https' : 'http';
   const domain = cookie.domain.replace(/^\./, '');
@@ -286,16 +303,8 @@ async function deleteCookie(cookie, reload = true) {
 async function clearAll() {
   const count = allCookies.length;
   $('clearAllBtn').disabled = true;
-  // Parallelize: see domainDel handler for the Firefox 140 IPC-perf reason.
-  const args = allCookies.map(c => ({
-    url: `${c.secure ? 'https' : 'http'}://${c.domain.replace(/^\./, '')}${c.path}`,
-    name: c.name,
-    storeId: c.storeId,
-  }));
-  const results = await Promise.allSettled(
-    args.map(a => browser.cookies.remove(a))
-  );
-  const failed = results.filter(r => r.status === 'rejected').length;
+  // Batch + yield: see deleteCookiesBatched / domainDel handler.
+  const { total, failed } = await deleteCookiesBatched(allCookies);
   setStatus(
     failed
       ? `Cleared ${count - failed}/${count} cookies`
