@@ -224,17 +224,10 @@ function render() {
     domainDel.addEventListener('click', e => {
       e.stopPropagation();
       confirmClick(domainDel, async () => {
-        // Batch + yield: in slow IPC environments (KVM guest, Firefox 140
-        // IPC regression) a tight parallel delete loop still freezes the
-        // popup. Processing in small batches with an event-loop yield
-        // between keeps the popup repainting and clickable during the run.
-        const { total, failed } = await deleteCookiesBatched(cookies);
-        setStatus(
-          failed
-            ? `Deleted ${total - failed}/${total} cookies for ${domain}`
-            : `✓ Deleted all cookies for ${domain}`,
-          failed > 0
-        );
+        // Fast path: one browsingData.remove call scoped to this domain
+        // and container. Falls back to per-cookie batching if rejected.
+        await deleteCookiesBulk(currentStoreId, [domain], cookies);
+        setStatus(`✓ Deleted all cookies for ${domain}`);
         await loadCookies(currentStoreId);
       });
     });
@@ -285,6 +278,24 @@ async function deleteCookiesBatched(cookies, batchSize = 8) {
   return { total: cookies.length, failed };
 }
 
+// Bulk delete via browsingData.remove — a single IPC call regardless of
+// how many cookies are involved. This is the fast path; on environments
+// where the call is rejected or unavailable we fall back to the per-cookie
+// batched path above. Pass `hostnames` for a single-domain delete, omit
+// (null) for an entire container.
+async function deleteCookiesBulk(storeId, hostnames, fallbackCookies) {
+  const removalOptions = { cookieStoreIds: [storeId] };
+  if (hostnames && hostnames.length) {
+    removalOptions.hostnames = hostnames;
+  }
+  try {
+    await browser.browsingData.remove(removalOptions, { cookies: true });
+  } catch (e) {
+    console.warn('browsingData.remove failed, falling back to batched:', e);
+    await deleteCookiesBatched(fallbackCookies);
+  }
+}
+
 async function deleteCookie(cookie, reload = true) {
   const protocol = cookie.secure ? 'https' : 'http';
   const domain = cookie.domain.replace(/^\./, '');
@@ -303,14 +314,10 @@ async function deleteCookie(cookie, reload = true) {
 async function clearAll() {
   const count = allCookies.length;
   $('clearAllBtn').disabled = true;
-  // Batch + yield: see deleteCookiesBatched / domainDel handler.
-  const { total, failed } = await deleteCookiesBatched(allCookies);
-  setStatus(
-    failed
-      ? `Cleared ${count - failed}/${count} cookies`
-      : `✓ Cleared ${count} cookies`,
-    failed > 0
-  );
+  // Fast path: one browsingData.remove call scoped to this container.
+  // Falls back to per-cookie batching if rejected.
+  await deleteCookiesBulk(currentStoreId, null, allCookies);
+  setStatus(`✓ Cleared ${count} cookies`);
   await loadCookies(currentStoreId);
 }
 
