@@ -29,6 +29,7 @@ async function init() {
   await loadContainers();
   $('containerSelect').addEventListener('change', onContainerChange);
   $('refreshBtn').addEventListener('click', () => loadCookies(currentStoreId));
+  $('copyAllBtn').addEventListener('click', copyAll);
   $('clearAllBtn').addEventListener('click', clearAll);
   $('searchInput').addEventListener('input', render);
 
@@ -69,12 +70,14 @@ async function onContainerChange() {
 
 async function loadCookies(storeId) {
   $('clearAllBtn').disabled = true;
+  $('copyAllBtn').disabled = true;
   $('cookieList').innerHTML = '';
   $('cookieList').appendChild(el('div', {class: 'empty', text: 'Loading…'}));
   setStatus('');
   try {
     allCookies = await browser.cookies.getAll({ storeId });
     $('clearAllBtn').disabled = allCookies.length === 0;
+    $('copyAllBtn').disabled = allCookies.length === 0;
     render();
   } catch (e) {
     setStatus('Error: ' + e.message, true);
@@ -121,8 +124,9 @@ function render() {
     const chevron = el('span', {class: 'chevron' + (isOpen ? ' open' : ''), text: '▶'});
     const domainName = el('span', {class: 'domain-name', text: domain});
     const domainCount = el('span', {class: 'domain-count', text: String(cookies.length)});
+    const domainCopy = el('button', {class: 'domain-copy', title: 'Copy all cookies for this domain (JSON)', text: '📋 all'});
     const domainDel = el('button', {class: 'domain-del', title: 'Delete all cookies for this domain', text: '✕ all'});
-    const header = el('div', {class: 'domain-header'}, chevron, domainName, domainCount, domainDel);
+    const header = el('div', {class: 'domain-header'}, chevron, domainName, domainCount, domainCopy, domainDel);
 
     // items
     const items = el('div', {class: 'cookie-items' + (isOpen ? ' open' : '')});
@@ -132,18 +136,39 @@ function render() {
         ? cookie.value.slice(0, 38) + '…' : (cookie.value || '(empty)');
       const nameSpan = el('span', {class: 'cookie-name', title: cookie.name, text: cookie.name});
       const valSpan  = el('span', {class: 'cookie-val',  title: cookie.value, text: preview});
+      const copyBtn  = el('button', {class: 'cookie-copy', title: 'Copy cookie (JSON)', text: '📋'});
       const delBtn   = el('button', {class: 'cookie-del', title: 'Delete', text: '✕'});
-      const item     = el('div', {class: 'cookie-item'}, nameSpan, valSpan, delBtn);
+      const item     = el('div', {class: 'cookie-item'}, nameSpan, valSpan, copyBtn, delBtn);
 
       delBtn.addEventListener('click', async e => {
         e.stopPropagation();
         await deleteCookie(cookie);
       });
+      copyBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const text = formatSingleCookie(cookie);
+        const ok = copyToClipboard(text);
+        flashCopied(copyBtn, ok, 'cookie');
+      });
+      nameSpan.addEventListener('click', e => {
+        e.stopPropagation();
+        const ok = copyToClipboard(cookie.name);
+        flashCopiedSpan(nameSpan, ok, 'name');
+      });
+      valSpan.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!cookie.value) {
+          setStatus('Empty value', true);
+          return;
+        }
+        const ok = copyToClipboard(cookie.value);
+        flashCopiedSpan(valSpan, ok, 'value');
+      });
       items.appendChild(item);
     }
 
     header.addEventListener('click', e => {
-      if (e.target === domainDel) return;
+      if (e.target === domainDel || e.target === domainCopy) return;
       if (openDomains.has(domain)) {
         openDomains.delete(domain);
         items.classList.remove('open');
@@ -160,6 +185,13 @@ function render() {
       for (const c of cookies) await deleteCookie(c, false);
       setStatus(`✓ Deleted all cookies for ${domain}`);
       await loadCookies(currentStoreId);
+    });
+
+    domainCopy.addEventListener('click', e => {
+      e.stopPropagation();
+      const text = formatDomainCookies(domain, cookies);
+      const ok = copyToClipboard(text);
+      flashCopied(domainCopy, ok, `${cookies.length} cookies of ${domain}`);
     });
 
     group.appendChild(header);
@@ -197,6 +229,87 @@ function setStatus(msg, isErr = false) {
   const el = $('footerStatus');
   el.textContent = msg;
   el.className = isErr ? 'status err' : 'status';
+}
+
+// Universal format: JSON.
+// Single cookie & all cookies of a domain share the same shape:
+//   { "domain": "...", "cookies": [{ "name": "...", "value": "..." }, ...] }
+// All domains of a container are an array of such entries, sorted by domain.
+function buildDomainEntry(domain, cookies) {
+  return {
+    domain,
+    cookies: cookies.map(c => ({ name: c.name, value: c.value })),
+  };
+}
+
+function formatSingleCookie(cookie) {
+  const domain = cookie.domain.replace(/^\./, '');
+  return JSON.stringify(buildDomainEntry(domain, [cookie]), null, 2);
+}
+
+function formatDomainCookies(domain, cookies) {
+  return JSON.stringify(buildDomainEntry(domain, cookies), null, 2);
+}
+
+function formatContainerCookies(cookies) {
+  const byDomain = {};
+  for (const c of cookies) {
+    const d = c.domain.replace(/^\./, '');
+    (byDomain[d] = byDomain[d] || []).push(c);
+  }
+  const domains = Object.keys(byDomain).sort();
+  return JSON.stringify(
+    domains.map(d => buildDomainEntry(d, byDomain[d])),
+    null, 2
+  );
+}
+
+function copyAll() {
+  const text = formatContainerCookies(allCookies);
+  const ok = copyToClipboard(text);
+  flashCopied($('copyAllBtn'), ok, `${allCookies.length} cookies of container`);
+}
+
+function copyToClipboard(text) {
+  // navigator.clipboard works in extension popups in modern Firefox
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    return true;
+  }
+  return fallbackCopy(text);
+}
+
+function fallbackCopy(text) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+function flashCopied(btn, ok, label) {
+  const original = btn.textContent;
+  btn.textContent = ok ? '✓' : '✕';
+  btn.classList.add('copied');
+  setStatus(ok ? `✓ Copied ${label}` : 'Copy failed', !ok);
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.classList.remove('copied');
+  }, 1000);
+}
+
+function flashCopiedSpan(span, ok, label) {
+  span.classList.add('copied');
+  setStatus(ok ? `✓ Copied ${label}` : 'Copy failed', !ok);
+  setTimeout(() => span.classList.remove('copied'), 1000);
 }
 
 init();

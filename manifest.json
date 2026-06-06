@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "ContainerCookies",
   "version": "1.0.0",
-  "description": "View and delete cookies per Firefox container. Browse cookies grouped by domain, delete individual cookies or clear entire containers. GitHub: https://github.com/soko1/ContainerCookies",
+  "description": "View, copy and delete cookies per Firefox container. Browse cookies grouped by domain, copy individual cookies or entire domains (Cookie header format), and clear containers. GitHub: https://github.com/soko1/ContainerCookies",
   "author": "soko1",
   "homepage_url": "https://github.com/soko1/ContainerCookies",
   "browser_specific_settings": {

@@ -142,6 +142,20 @@
     .domain-header:hover .domain-del { opacity: 1; }
     .domain-del:hover { background: #da363320; }
 
+    .domain-copy {
+      font-size: 11px;
+      color: #58a6ff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .domain-header:hover .domain-copy { opacity: 1; }
+    .domain-copy:hover { background: #58a6ff20; }
+
     .chevron { font-size: 10px; color: #484f58; transition: transform .15s; }
     .chevron.open { transform: rotate(90deg); }
 
@@ -165,7 +179,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      cursor: pointer;
+      transition: color .15s;
     }
+    .cookie-name:hover { color: #58a6ff; }
+    .cookie-name.copied { color: #3fb950; }
+
     .cookie-val {
       flex: 1;
       font-family: monospace;
@@ -174,7 +193,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      cursor: pointer;
+      transition: color .15s;
     }
+    .cookie-val:hover { color: #8b949e; }
+    .cookie-val.copied { color: #3fb950; }
     .cookie-del {
       flex-shrink: 0;
       background: none;
@@ -190,6 +213,25 @@
     }
     .cookie-item:hover .cookie-del { opacity: 1; }
     .cookie-del:hover { color: #da3633; background: #da363320; }
+
+    .cookie-copy {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: #484f58;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .cookie-item:hover .cookie-copy { opacity: 1; }
+    .cookie-copy:hover { color: #58a6ff; background: #58a6ff20; }
+    .cookie-copy.copied { color: #3fb950; opacity: 1; }
+    .domain-copy.copied { color: #3fb950; opacity: 1; }
+    .btn.copied { background: #3fb950; color: white; border-color: #3fb950; }
 
     /* EMPTY */
     .empty {
@@ -230,6 +272,7 @@
       <option value="">Loading…</option>
     </select>
     <button class="btn btn-ghost" id="refreshBtn">↻</button>
+    <button class="btn btn-ghost" id="copyAllBtn" disabled title="Copy all cookies in this container (JSON)">📋 all</button>
     <button class="btn btn-danger" id="clearAllBtn" disabled>Clear all</button>
   </div>
 
