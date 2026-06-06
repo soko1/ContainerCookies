@@ -12,6 +12,72 @@ A Firefox extension for viewing and managing cookies per container.
 - Delete a single cookie or all cookies for a domain
 - Clear all cookies in the selected container at once
 - Search by domain or cookie name
+- **Copy** cookies as JSON at three granularities, or copy a single
+  name/value with one click — see [Copying](#copying)
+- **Two-click confirmation** for every destructive action, so no
+  accidental wipes — see [Usage](#usage)
+
+## Copying
+
+You can copy cookies at four levels of granularity. All multi-cookie
+exports use the same JSON shape, so they're easy to feed into scripts.
+
+| Action | Where | Format |
+|---|---|---|
+| Copy every cookie in the container | `copy` button in the toolbar | JSON array of `{domain, cookies}` entries, sorted by domain |
+| Copy every cookie of one domain | `📋 copy` next to a domain header | JSON object: `{domain, cookies: [{name, value}, ...]}` |
+| Copy one cookie (as JSON) | `copy` next to the cookie | JSON object: `{domain, cookies: [{name, value}]}` |
+| Copy the cookie name | click the name in the list | plain string |
+| Copy the cookie value | click the value in the list | plain string |
+
+### Examples
+
+Copy a single cookie — the resulting clipboard contents:
+```json
+{
+  "domain": "example.com",
+  "cookies": [
+    { "name": "session_id", "value": "abc123def456" }
+  ]
+}
+```
+
+Copy all cookies of one domain:
+```json
+{
+  "domain": "example.com",
+  "cookies": [
+    { "name": "session_id", "value": "abc123def456" },
+    { "name": "theme", "value": "dark" }
+  ]
+}
+```
+
+Copy every cookie in a container (entries are sorted alphabetically by
+domain):
+```json
+[
+  {
+    "domain": "example.com",
+    "cookies": [
+      { "name": "session_id", "value": "abc123def456" }
+    ]
+  },
+  {
+    "domain": "other.com",
+    "cookies": [
+      { "name": "preference", "value": "compact" }
+    ]
+  }
+]
+```
+
+**Tip:** piping the container export into `jq` lets you extract one
+cookie's value across every domain that has one:
+
+```sh
+cat container.json | jq '[.[] | .cookies[] | select(.name=="session_id") | .value]'
+```
 
 ## Installation
 
@@ -39,10 +105,19 @@ ContainerCookies requires [Firefox Multi-Account Containers](https://addons.mozi
 2. Click the ContainerCookies icon in the toolbar
 3. Select a container from the dropdown to see its cookies
 4. Expand any domain to browse individual cookies
-5. Click ✕ next to a cookie to delete it, or use "Clear all" to wipe the entire container
+5. **Copy** with the buttons described in [Copying](#copying); click a
+   cookie name or value to copy just that piece of text
+6. **Delete with confidence:** the first click on a delete button arms
+   it (turns red, 3-second countdown). Click again within the window to
+   actually delete. This two-click pattern applies to single cookies,
+   whole domains, and the "Clear all" button in the toolbar — no
+   accidental wipes.
 
 No account or external service required — everything runs locally in your browser.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ## License
 
