@@ -224,8 +224,24 @@ function render() {
     domainDel.addEventListener('click', e => {
       e.stopPropagation();
       confirmClick(domainDel, async () => {
-        for (const c of cookies) await deleteCookie(c, false);
-        setStatus(`✓ Deleted all cookies for ${domain}`);
+        // Parallelize: sequential `await browser.cookies.remove` made the
+        // popup unresponsive for several seconds on Firefox 140 (regressed
+        // IPC perf). All deletes + one re-fetch is dramatically snappier.
+        const args = cookies.map(c => ({
+          url: `${c.secure ? 'https' : 'http'}://${c.domain.replace(/^\./, '')}${c.path}`,
+          name: c.name,
+          storeId: c.storeId,
+        }));
+        const results = await Promise.allSettled(
+          args.map(a => browser.cookies.remove(a))
+        );
+        const failed = results.filter(r => r.status === 'rejected').length;
+        setStatus(
+          failed
+            ? `Deleted ${cookies.length - failed}/${cookies.length} cookies for ${domain}`
+            : `✓ Deleted all cookies for ${domain}`,
+          failed > 0
+        );
         await loadCookies(currentStoreId);
       });
     });
@@ -270,8 +286,22 @@ async function deleteCookie(cookie, reload = true) {
 async function clearAll() {
   const count = allCookies.length;
   $('clearAllBtn').disabled = true;
-  for (const c of allCookies) await deleteCookie(c, false);
-  setStatus(`✓ Cleared ${count} cookies`);
+  // Parallelize: see domainDel handler for the Firefox 140 IPC-perf reason.
+  const args = allCookies.map(c => ({
+    url: `${c.secure ? 'https' : 'http'}://${c.domain.replace(/^\./, '')}${c.path}`,
+    name: c.name,
+    storeId: c.storeId,
+  }));
+  const results = await Promise.allSettled(
+    args.map(a => browser.cookies.remove(a))
+  );
+  const failed = results.filter(r => r.status === 'rejected').length;
+  setStatus(
+    failed
+      ? `Cleared ${count - failed}/${count} cookies`
+      : `✓ Cleared ${count} cookies`,
+    failed > 0
+  );
   await loadCookies(currentStoreId);
 }
 
