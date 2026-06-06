@@ -72,11 +72,17 @@
     .btn-danger:hover { background: #b91c1c; }
     .btn-danger:disabled { background: #333; border-color: #333; color: #666; cursor: default; }
 
-    /* Double-click confirm state — 3s window, second click commits the action. */
+    /* Double-click confirm state — 3s window, second click commits the action.
+       On hover, the button gets a strong red glow so the user clearly sees
+       where to click to confirm. */
     .cookie-del.confirming, .domain-del.confirming {
       background: #da3633;
       color: white;
       opacity: 1;
+    }
+    .cookie-del.confirming:hover, .domain-del.confirming:hover {
+      background: #f85149;
+      box-shadow: 0 0 12px 2px #da3633cc, 0 0 0 2px #da363360;
     }
     .btn.confirming {
       background: #da3633;
@@ -149,33 +155,46 @@
       padding: 1px 7px;
       border-radius: 10px;
     }
-    .domain-del {
+    /* Domain copy/delete: text labels (📋 copy / ✕ delete).
+       Delete is wide enough to fit "Confirm? 3s" without reflowing the row. */
+    .domain-copy, .domain-del {
       font-size: 11px;
-      color: #da3633;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 4px;
       opacity: 0;
-      transition: opacity .15s;
+      transition: opacity .15s, background .15s, color .15s, box-shadow .15s;
     }
-    .domain-header:hover .domain-del { opacity: 1; }
-    .domain-del:hover { background: #da363320; }
-
     .domain-copy {
-      font-size: 11px;
       color: #58a6ff;
       background: none;
       border: none;
       cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-      opacity: 0;
-      transition: opacity .15s;
+      min-width: 64px;
+    }
+    .domain-del {
+      color: #da3633;
+      background: none;
+      border: none;
+      cursor: pointer;
+      min-width: 95px;  /* fits "Confirm? 3s" */
     }
     .domain-header:hover .domain-copy { opacity: 1; }
-    .domain-copy:hover { background: #58a6ff20; }
+    .domain-header:hover .domain-del { opacity: 1; }
+    .domain-copy:hover { background: #58a6ff20; opacity: 1; }
+    .domain-del:hover { background: #da363320; opacity: 1; }
+
+    /* Hovering the copy/delete button tints the whole domain group
+       so the user sees exactly what will be copied / deleted. */
+    .domain-group.preview-copy .domain-header { background: #1f3450; }
+    .domain-group.preview-copy .domain-name { color: #79b8ff; }
+    .domain-group.preview-copy .cookie-items.open { background: #142336; }
+    .domain-group.preview-copy .cookie-item { background: #182a40; }
+    .domain-group.preview-copy .cookie-item:hover { background: #1f3450; }
+    .domain-group.preview-del .domain-header { background: #3d1d1d; }
+    .domain-group.preview-del .domain-name { color: #f87171; }
+    .domain-group.preview-del .cookie-items.open { background: #2a1212; }
+    .domain-group.preview-del .cookie-item { background: #2d1717; }
+    .domain-group.preview-del .cookie-item:hover { background: #3d1d1d; }
 
     .chevron { font-size: 10px; color: #484f58; transition: transform .15s; }
     .chevron.open { transform: rotate(90deg); }
@@ -219,37 +238,34 @@
     }
     .cookie-val:hover { color: #8b949e; }
     .cookie-val.copied { color: #3fb950; }
-    .cookie-del {
+    /* Cookie copy/delete: plain text labels (copy / delete), no icons.
+       Delete is wide enough to fit "Confirm? 3s" without reflowing. */
+    .cookie-copy, .cookie-del {
       flex-shrink: 0;
       background: none;
       border: none;
-      color: #484f58;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 11px;
       line-height: 1;
-      padding: 2px 4px;
+      padding: 3px 8px;
       border-radius: 3px;
       opacity: 0;
-      transition: opacity .15s;
+      transition: opacity .15s, background .15s, color .15s, box-shadow .15s;
     }
-    .cookie-item:hover .cookie-del { opacity: 1; }
-    .cookie-del:hover { color: #da3633; background: #da363320; }
-
-    .cookie-copy {
-      flex-shrink: 0;
-      background: none;
-      border: none;
-      color: #484f58;
-      cursor: pointer;
-      font-size: 12px;
-      line-height: 1;
-      padding: 2px 4px;
-      border-radius: 3px;
-      opacity: 0;
-      transition: opacity .15s;
-    }
+    .cookie-copy { color: #8b949e; min-width: 40px; }
+    .cookie-del  { color: #8b949e; min-width: 85px; }  /* fits "Confirm? 3s" */
     .cookie-item:hover .cookie-copy { opacity: 1; }
-    .cookie-copy:hover { color: #58a6ff; background: #58a6ff20; }
+    .cookie-item:hover .cookie-del { opacity: 1; }
+    .cookie-copy:hover { color: #58a6ff; background: #58a6ff20; opacity: 1; }
+    .cookie-del:hover  { color: #f87171; background: #da363320; opacity: 1; }
+
+    /* Hovering the copy/delete button tints the whole cookie row. */
+    .cookie-item.preview-copy { background: #1f3450; }
+    .cookie-item.preview-copy .cookie-name { color: #79b8ff; }
+    .cookie-item.preview-copy .cookie-val  { color: #8b949e; }
+    .cookie-item.preview-del  { background: #3d1d1d; }
+    .cookie-item.preview-del  .cookie-name { color: #f87171; }
+    .cookie-item.preview-del  .cookie-val  { color: #8b949e; }
     .cookie-copy.copied { color: #3fb950; opacity: 1; }
     .domain-copy.copied { color: #3fb950; opacity: 1; }
     .btn.copied { background: #3fb950; color: white; border-color: #3fb950; }

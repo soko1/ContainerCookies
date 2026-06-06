@@ -159,8 +159,8 @@ function render() {
     const chevron = el('span', {class: 'chevron' + (isOpen ? ' open' : ''), text: '▶'});
     const domainName = el('span', {class: 'domain-name', text: domain});
     const domainCount = el('span', {class: 'domain-count', text: String(cookies.length)});
-    const domainCopy = el('button', {class: 'domain-copy', title: 'Copy all cookies for this domain (JSON)', text: '📋 all'});
-    const domainDel = el('button', {class: 'domain-del', title: 'Delete all cookies for this domain', text: '✕ all'});
+    const domainCopy = el('button', {class: 'domain-copy', title: 'Copy all cookies for this domain (JSON)', text: '📋 copy'});
+    const domainDel = el('button', {class: 'domain-del', title: 'Delete all cookies for this domain', text: '✕ delete'});
     const header = el('div', {class: 'domain-header'}, chevron, domainName, domainCount, domainCopy, domainDel);
 
     // items
@@ -171,8 +171,8 @@ function render() {
         ? cookie.value.slice(0, 38) + '…' : (cookie.value || '(empty)');
       const nameSpan = el('span', {class: 'cookie-name', title: cookie.name, text: cookie.name});
       const valSpan  = el('span', {class: 'cookie-val',  title: cookie.value, text: preview});
-      const copyBtn  = el('button', {class: 'cookie-copy', title: 'Copy cookie (JSON)', text: '📋'});
-      const delBtn   = el('button', {class: 'cookie-del', title: 'Delete', text: '✕'});
+      const copyBtn  = el('button', {class: 'cookie-copy', title: 'Copy cookie (JSON)', text: 'copy'});
+      const delBtn   = el('button', {class: 'cookie-del', title: 'Delete', text: 'delete'});
       const item     = el('div', {class: 'cookie-item'}, nameSpan, valSpan, copyBtn, delBtn);
 
       delBtn.addEventListener('click', e => {
@@ -185,6 +185,12 @@ function render() {
         const ok = copyToClipboard(text);
         flashCopied(copyBtn, ok, 'cookie');
       });
+      // Tint the whole row on button hover so the user can visually
+      // evaluate what will be copied / deleted.
+      copyBtn.addEventListener('mouseenter', () => item.classList.add('preview-copy'));
+      copyBtn.addEventListener('mouseleave', () => item.classList.remove('preview-copy'));
+      delBtn.addEventListener('mouseenter',  () => item.classList.add('preview-del'));
+      delBtn.addEventListener('mouseleave',  () => item.classList.remove('preview-del'));
       nameSpan.addEventListener('click', e => {
         e.stopPropagation();
         const ok = copyToClipboard(cookie.name);
@@ -230,6 +236,13 @@ function render() {
       const ok = copyToClipboard(text);
       flashCopied(domainCopy, ok, `${cookies.length} cookies of ${domain}`);
     });
+
+    // Tint the whole domain group on button hover so the user can
+    // visually see exactly which cookies will be copied / deleted.
+    domainCopy.addEventListener('mouseenter', () => group.classList.add('preview-copy'));
+    domainCopy.addEventListener('mouseleave', () => group.classList.remove('preview-copy'));
+    domainDel.addEventListener('mouseenter',  () => group.classList.add('preview-del'));
+    domainDel.addEventListener('mouseleave',  () => group.classList.remove('preview-del'));
 
     group.appendChild(header);
     group.appendChild(items);
