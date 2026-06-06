@@ -25,12 +25,47 @@ function el(tag, props = {}, ...children) {
   return e;
 }
 
+// Two-click confirm for destructive actions.
+// 1st click: button text → "Confirm? 3s" (countdown), turns red.
+// 2nd click within `timeoutMs`: runs `action()`.
+// Otherwise: restores original text/style.
+function confirmClick(btn, action, timeoutMs = 3000) {
+  if (btn.dataset.confirming) {
+    if (btn._confirmTimer) {
+      clearTimeout(btn._confirmTimer);
+      clearInterval(btn._confirmInterval);
+    }
+    btn._confirmTimer = btn._confirmInterval = null;
+    btn.textContent = btn._originalText;
+    btn.classList.remove('confirming');
+    delete btn.dataset.confirming;
+    action();
+    return;
+  }
+  btn._originalText = btn.textContent;
+  btn.dataset.confirming = '1';
+  btn.classList.add('confirming');
+  let remaining = Math.ceil(timeoutMs / 1000);
+  btn.textContent = `Confirm? ${remaining}s`;
+  btn._confirmInterval = setInterval(() => {
+    remaining--;
+    if (remaining > 0) btn.textContent = `Confirm? ${remaining}s`;
+  }, 1000);
+  btn._confirmTimer = setTimeout(() => {
+    clearInterval(btn._confirmInterval);
+    btn._confirmTimer = btn._confirmInterval = null;
+    btn.textContent = btn._originalText;
+    btn.classList.remove('confirming');
+    delete btn.dataset.confirming;
+  }, timeoutMs);
+}
+
 async function init() {
   await loadContainers();
   $('containerSelect').addEventListener('change', onContainerChange);
   $('refreshBtn').addEventListener('click', () => loadCookies(currentStoreId));
   $('copyAllBtn').addEventListener('click', copyAll);
-  $('clearAllBtn').addEventListener('click', clearAll);
+  $('clearAllBtn').addEventListener('click', () => confirmClick($('clearAllBtn'), clearAll));
   $('searchInput').addEventListener('input', render);
 
   const sel = $('containerSelect');
@@ -140,9 +175,9 @@ function render() {
       const delBtn   = el('button', {class: 'cookie-del', title: 'Delete', text: '✕'});
       const item     = el('div', {class: 'cookie-item'}, nameSpan, valSpan, copyBtn, delBtn);
 
-      delBtn.addEventListener('click', async e => {
+      delBtn.addEventListener('click', e => {
         e.stopPropagation();
-        await deleteCookie(cookie);
+        confirmClick(delBtn, () => deleteCookie(cookie));
       });
       copyBtn.addEventListener('click', e => {
         e.stopPropagation();
@@ -180,11 +215,13 @@ function render() {
       }
     });
 
-    domainDel.addEventListener('click', async e => {
+    domainDel.addEventListener('click', e => {
       e.stopPropagation();
-      for (const c of cookies) await deleteCookie(c, false);
-      setStatus(`✓ Deleted all cookies for ${domain}`);
-      await loadCookies(currentStoreId);
+      confirmClick(domainDel, async () => {
+        for (const c of cookies) await deleteCookie(c, false);
+        setStatus(`✓ Deleted all cookies for ${domain}`);
+        await loadCookies(currentStoreId);
+      });
     });
 
     domainCopy.addEventListener('click', e => {

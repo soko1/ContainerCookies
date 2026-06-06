@@ -57,12 +57,33 @@
       font-weight: 500;
       white-space: nowrap;
       transition: all .15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
+    /* Stable toolbar button width so labels never reflow the toolbar.
+       130px comfortably fits "📋 Copy All" and "Confirm? 3s". */
+    #copyAllBtn, #clearAllBtn { min-width: 130px; }
     .btn-ghost { background: #21262d; color: #8b949e; }
     .btn-ghost:hover { background: #30363d; color: #c9d1d9; }
+    .btn-ghost:disabled { background: #161b22; color: #484f58; cursor: default; }
+    .btn-ghost:disabled:hover { background: #161b22; color: #484f58; }
     .btn-danger { background: #da3633; color: white; border-color: #da3633; }
     .btn-danger:hover { background: #b91c1c; }
     .btn-danger:disabled { background: #333; border-color: #333; color: #666; cursor: default; }
+
+    /* Double-click confirm state — 3s window, second click commits the action. */
+    .cookie-del.confirming, .domain-del.confirming {
+      background: #da3633;
+      color: white;
+      opacity: 1;
+    }
+    .btn.confirming {
+      background: #da3633;
+      color: white;
+      border-color: #b91c1c;
+      box-shadow: 0 0 0 2px #da363340;
+    }
 
     /* SEARCH */
     .search-bar {
@@ -272,8 +293,8 @@
       <option value="">Loading…</option>
     </select>
     <button class="btn btn-ghost" id="refreshBtn">↻</button>
-    <button class="btn btn-ghost" id="copyAllBtn" disabled title="Copy all cookies in this container (JSON)">📋 all</button>
-    <button class="btn btn-danger" id="clearAllBtn" disabled>Clear all</button>
+    <button class="btn btn-ghost" id="copyAllBtn" disabled title="Copy all cookies in this container (JSON)">📋 Copy All</button>
+    <button class="btn btn-ghost" id="clearAllBtn" disabled title="Delete all cookies in this container">Clear All</button>
   </div>
 
   <div class="search-bar">
