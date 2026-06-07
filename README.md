@@ -6,7 +6,7 @@ A Firefox extension for viewing and managing cookies per container.
 
 ## Demo
 
-![Demo](demo.mp4)
+![Demo](demo.gif)
 
 ## Features
 
