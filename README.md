@@ -1,10 +1,8 @@
 # ContainerCookies
 
+## Demo
 
-
-https://github.com/user-attachments/assets/3a55bc2a-5a43-4525-9305-06eed47befef
-
-
+![Demo](https://github.com/user-attachments/assets/3a55bc2a-5a43-4525-9305-06eed47befef)
 
 A Firefox extension for viewing and managing cookies per container.
 
