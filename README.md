@@ -4,6 +4,10 @@
 
 A Firefox extension for viewing and managing cookies per container.
 
+## Demo
+
+<video src="demo.mp4" autoplay loop muted playsinline width="700"></video>
+
 ## Features
 
 - Select any Firefox container (or "No container") from a dropdown
