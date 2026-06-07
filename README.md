@@ -6,7 +6,7 @@ A Firefox extension for viewing and managing cookies per container.
 
 ## Demo
 
-<video src="demo.mp4" autoplay loop muted playsinline width="700"></video>
+![Demo](demo.mp4)
 
 ## Features
 
